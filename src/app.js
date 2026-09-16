@@ -24,9 +24,11 @@ app.use(cookieParser());
 // Import routes
 import healthCheckRouter from "./routes/healthcheck.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import projectRoutes from "./routes/project.routes.js";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth/", authRoutes);
+app.use("/api/v1/projects/", projectRoutes);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the Project Management Platform!");
