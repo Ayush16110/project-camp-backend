@@ -303,6 +303,15 @@ const updateMemberRole = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid Role");
     }
 
+    let projectMember = await ProjectMember.findOne({
+        user: new mongoose.Types.ObjectId(userId),
+        project: new mongoose.Types.ObjectId(projectId),
+    });
+
+    if (!projectMember) {
+        throw new ApiError(404, "Project Member not found");
+    }
+
     if (
         newRole === ProjectMemberRoleEnum.PROJECT_ADMIN &&
         req.user.role !== UserRolesEnum.ADMIN
@@ -313,28 +322,27 @@ const updateMemberRole = asyncHandler(async (req, res) => {
         );
     }
 
-    let projectMember = await ProjectMember.findOne({
-        user: new mongoose.Types.ObjectId(userId),
-        project: new mongoose.Types.ObjectId(projectId),
-    });
-
-    if (!projectMember) {
-        throw new ApiError(404, "Project Member not found");
+    if (
+        projectMember.role === ProjectMemberRoleEnum.PROJECT_ADMIN &&
+        req.user.role !== UserRolesEnum.ADMIN
+    ) {
+        throw new ApiError(
+            403,
+            "Only global admins can change a project admin's role",
+        );
     }
 
     projectMember = await ProjectMember.findByIdAndUpdate(
         projectMember._id,
-        {
-            role: newRole,
-        },
-        { new: true },
+        { role: newRole },
+        { new: true, runValidators: true },
     );
 
     if (!projectMember) {
         throw new ApiError(404, "Project Member not found");
     }
 
-    res.status(200).json(
+    return res.status(200).json(
         new ApiResponse(
             200,
             projectMember,
@@ -353,6 +361,16 @@ const deleteMember = asyncHandler(async (req, res) => {
 
     if (!projectMember) {
         throw new ApiError(404, "Project member not found");
+    }
+
+    if (
+        projectMember.role === ProjectMemberRoleEnum.PROJECT_ADMIN &&
+        req.user.role !== UserRolesEnum.ADMIN
+    ) {
+        throw new ApiError(
+            403,
+            "Only global admins can remove a project admin",
+        );
     }
 
     await ProjectMember.findByIdAndDelete(projectMember._id);
