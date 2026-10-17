@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/async-handler.js";
 import { ApiError } from "../utils/api-error.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { emailVerificationMailgenContent, sendEmail } from "../utils/mail.js";
-import crypto, { createPrivateKey } from "crypto";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {

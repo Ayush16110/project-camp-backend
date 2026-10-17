@@ -1,3 +1,4 @@
+import { User } from "../models/user.models.js";
 import { Project } from "../models/project.models.js";
 import { ProjectMember } from "../models/projectmember.models.js";
 import { asyncHandler } from "../utils/async-handler.js";
@@ -110,13 +111,7 @@ const getProjectById = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                project,
-                "Project fetched successfully",
-            ),
-        );
+        .json(new ApiResponse(200, project, "Project fetched successfully"));
 });
 
 const createProject = asyncHandler(async (req, res) => {
@@ -253,32 +248,51 @@ const getProjectMembers = asyncHandler(async (req, res) => {
 });
 
 const addMembersToProject = asyncHandler(async (req, res) => {
-    const { role } = req.body;
+    const { email, role } = req.body;
     const { projectId } = req.params;
 
-    const projectMember = await ProjectMember.findByIdAndUpdate(
-        {
-            user: new mongoose.Types.ObjectId(req.user._id),
-            project: new mongoose.Types.ObjectId(projectId),
-        },
-        {
-            user: new mongoose.Types.ObjectId(req.user._id),
-            project: new mongoose.Types.ObjectId(projectId),
-            role: role,
-        },
-        {
-            upsert: true,
-            new: true,
-        },
-    );
+    const targetUser = await User.findOne({
+        email: email.trim().toLowerCase(),
+    });
 
-    if (!projectMember) {
-        throw new ApiError(400, "Something went wrong");
+    if (!targetUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const existingMembership = await ProjectMember.findOne({
+        user: targetUser._id,
+        project: projectId,
+    });
+
+    if (existingMembership) {
+        throw new ApiError(409, "User is already a member of this project");
+    }
+
+    let projectMember;
+
+    try {
+        projectMember = await ProjectMember.create({
+            user: targetUser._id,
+            project: projectId,
+            role,
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            throw new ApiError(409, "User is already a member of this project");
+        }
+
+        throw error;
     }
 
     return res
-        .status(200)
-        .json(new ApiResponse(201, {}, "Project member added successfully"));
+        .status(201)
+        .json(
+            new ApiResponse(
+                201,
+                projectMember,
+                "Project member added successfully",
+            ),
+        );
 });
 
 const updateMemberRole = asyncHandler(async (req, res) => {
