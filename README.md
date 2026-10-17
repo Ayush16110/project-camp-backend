@@ -47,11 +47,11 @@ The backend provides user authentication, JWT-based authorization, project manag
 
 The project defines three roles:
 
-| Role | Description |
-| --- | --- |
-| `admin` | System-level administrator |
+| Role            | Description                            |
+| --------------- | -------------------------------------- |
+| `admin`         | System-level administrator             |
 | `project_admin` | Administrative access within a project |
-| `member` | Basic project membership |
+| `member`        | Basic project membership               |
 
 Project authorization is handled through reusable middleware that checks the authenticated user's membership and role before allowing protected operations.
 
@@ -84,22 +84,22 @@ done
 
 ## Tech Stack
 
-| Technology | Purpose |
-| --- | --- |
-| **Node.js** | JavaScript runtime |
-| **Express 5** | REST API framework |
-| **MongoDB** | Database |
-| **Mongoose** | MongoDB ODM |
-| **JWT** | Authentication and authorization |
-| **bcrypt** | Password hashing |
-| **express-validator** | Request validation |
-| **Nodemailer** | Email delivery |
-| **Mailgen** | Email template generation |
-| **cookie-parser** | Cookie handling |
-| **CORS** | Cross-origin request configuration |
-| **dotenv** | Environment configuration |
-| **Nodemon** | Development server |
-| **Prettier** | Code formatting |
+| Technology            | Purpose                            |
+| --------------------- | ---------------------------------- |
+| **Node.js**           | JavaScript runtime                 |
+| **Express 5**         | REST API framework                 |
+| **MongoDB**           | Database                           |
+| **Mongoose**          | MongoDB ODM                        |
+| **JWT**               | Authentication and authorization   |
+| **bcrypt**            | Password hashing                   |
+| **express-validator** | Request validation                 |
+| **Nodemailer**        | Email delivery                     |
+| **Mailgen**           | Email template generation          |
+| **cookie-parser**     | Cookie handling                    |
+| **CORS**              | Cross-origin request configuration |
+| **dotenv**            | Environment configuration          |
+| **Nodemon**           | Development server                 |
+| **Prettier**          | Code formatting                    |
 
 The dependencies and scripts are defined in `package.json`. citeturn1view1
 
@@ -231,40 +231,40 @@ http://localhost:3000/api/v1
 
 ### Health Check
 
-| Method | Endpoint | Authentication | Description |
-| --- | --- | --- | --- |
-| `GET` | `/healthcheck/` | Public | Check API health |
+| Method | Endpoint        | Authentication | Description      |
+| ------ | --------------- | -------------- | ---------------- |
+| `GET`  | `/healthcheck/` | Public         | Check API health |
 
 ### Authentication
 
-| Method | Endpoint | Authentication | Description |
-| --- | --- | --- | --- |
-| `POST` | `/auth/register` | Public | Register a new user |
-| `POST` | `/auth/login` | Public | Authenticate a user |
-| `GET` | `/auth/verify-email/:verificationToken` | Public | Verify user email |
-| `POST` | `/auth/refresh-token` | Public | Refresh access token |
-| `POST` | `/auth/forgot-password` | Public | Request password reset |
-| `POST` | `/auth/reset-password/:resetToken` | Public | Reset password |
-| `POST` | `/auth/logout` | Protected | Logout current user |
-| `POST` | `/auth/current-user` | Protected | Get authenticated user |
-| `POST` | `/auth/change-password` | Protected | Change current password |
-| `POST` | `/auth/resend-email-verification` | Protected | Resend verification email |
+| Method | Endpoint                                | Authentication | Description               |
+| ------ | --------------------------------------- | -------------- | ------------------------- |
+| `POST` | `/auth/register`                        | Public         | Register a new user       |
+| `POST` | `/auth/login`                           | Public         | Authenticate a user       |
+| `GET`  | `/auth/verify-email/:verificationToken` | Public         | Verify user email         |
+| `POST` | `/auth/refresh-token`                   | Public         | Refresh access token      |
+| `POST` | `/auth/forgot-password`                 | Public         | Request password reset    |
+| `POST` | `/auth/reset-password/:resetToken`      | Public         | Reset password            |
+| `POST` | `/auth/logout`                          | Protected      | Logout current user       |
+| `POST` | `/auth/current-user`                    | Protected      | Get authenticated user    |
+| `POST` | `/auth/change-password`                 | Protected      | Change current password   |
+| `POST` | `/auth/resend-email-verification`       | Protected      | Resend verification email |
 
 These routes are wired through `auth.routes.js` and use validation middleware on applicable requests. citeturn5view3
 
 ### Projects
 
-| Method | Endpoint | Authentication | Description |
-| --- | --- | --- | --- |
-| `GET` | `/projects/` | Protected | List user's projects |
-| `POST` | `/projects/` | Protected | Create a project |
-| `GET` | `/projects/:projectId` | Protected + role | Get project details |
-| `PUT` | `/projects/:projectId` | Protected + role | Update project |
-| `DELETE` | `/projects/:projectId` | Protected + role | Delete project |
-| `GET` | `/projects/:projectId/members` | Protected + role | List project members |
-| `POST` | `/projects/:projectId/members` | Protected + role | Add a project member |
-| `PUT` | `/projects/:projectId/members/:userId` | Protected + role | Update member role |
-| `DELETE` | `/projects/:projectId/members/:userId` | Protected + role | Remove member |
+| Method   | Endpoint                               | Authentication   | Description          |
+| -------- | -------------------------------------- | ---------------- | -------------------- |
+| `GET`    | `/projects/`                           | Protected        | List user's projects |
+| `POST`   | `/projects/`                           | Protected        | Create a project     |
+| `GET`    | `/projects/:projectId`                 | Protected + role | Get project details  |
+| `PUT`    | `/projects/:projectId`                 | Protected + role | Update project       |
+| `DELETE` | `/projects/:projectId`                 | Protected + role | Delete project       |
+| `GET`    | `/projects/:projectId/members`         | Protected + role | List project members |
+| `POST`   | `/projects/:projectId/members`         | Protected + role | Add a project member |
+| `PUT`    | `/projects/:projectId/members/:userId` | Protected + role | Update member role   |
+| `DELETE` | `/projects/:projectId/members/:userId` | Protected + role | Remove member        |
 
 All project routes first require JWT authentication. Project-specific endpoints additionally use the project permission middleware. citeturn2view3
 

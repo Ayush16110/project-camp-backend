@@ -10,16 +10,24 @@ import {
     updateMemberRole,
     deleteMember,
 } from "../controllers/project.controllers.js";
+
 import { validate } from "../middlewares/validator.middlewares.js";
+
 import {
     createProjectValidator,
     addMemberToProjectValidator,
 } from "../validators/index.js";
+
 import {
     verifyJWT,
     validateProjectPermission,
 } from "../middlewares/auth.middlewares.js";
-import { AvailableUserRole, UserRoleEnum } from "../utils/constants.js";
+
+import {
+    AvailableUserRoles,
+    UserRolesEnum,
+    ProjectMemberRoleEnum,
+} from "../utils/constants.js";
 
 const router = Router();
 
@@ -28,33 +36,34 @@ router.use(verifyJWT);
 router
     .route("/")
     .get(getProjects)
-    .post(validateProjectPermission([UserRoleEnum.ADMIN]), createProjectValidator(), validate, createProject);
+    .post(
+        validateProjectPermission([UserRolesEnum.ADMIN]),
+        createProjectValidator(),
+        validate,
+        createProject,
+    );
 
 router
     .route("/:projectId")
-    .get(validateProjectPermission(AvailableUserRole), getProjectById)
+    .get(validateProjectPermission(AvailableUserRoles), getProjectById)
     .put(
-        validateProjectPermission([
-            UserRoleEnum.ADMIN,
-        ]),
+        validateProjectPermission([UserRolesEnum.ADMIN]),
         createProjectValidator(),
         validate,
         updateProject,
     )
     .delete(
-        validateProjectPermission([
-            UserRoleEnum.ADMIN,
-        ]),
+        validateProjectPermission([UserRolesEnum.ADMIN]),
         deleteProject,
     );
 
 router
     .route("/:projectId/members")
-    .get(validateProjectPermission(AvailableUserRole), getProjectMembers)
+    .get(validateProjectPermission(AvailableUserRoles), getProjectMembers)
     .post(
         validateProjectPermission([
-            UserRoleEnum.ADMIN,
-            UserRoleEnum.PROJECT_ADMIN,
+            UserRolesEnum.ADMIN,
+            ProjectMemberRoleEnum.PROJECT_ADMIN,
         ]),
         addMemberToProjectValidator(),
         validate,
@@ -65,15 +74,15 @@ router
     .route("/:projectId/members/:userId")
     .put(
         validateProjectPermission([
-            UserRoleEnum.ADMIN,
-            UserRoleEnum.PROJECT_ADMIN,
+            UserRolesEnum.ADMIN,
+            ProjectMemberRoleEnum.PROJECT_ADMIN,
         ]),
         updateMemberRole,
     )
     .delete(
         validateProjectPermission([
-            UserRoleEnum.ADMIN,
-            UserRoleEnum.PROJECT_ADMIN,
+            UserRolesEnum.ADMIN,
+            ProjectMemberRoleEnum.PROJECT_ADMIN,
         ]),
         deleteMember,
     );
