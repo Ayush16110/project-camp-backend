@@ -7,55 +7,84 @@ import mongoose from "mongoose";
 import {
     AvailableProjectMemberRoles,
     ProjectMemberRoleEnum,
-    UserRolesEnum
+    UserRolesEnum,
 } from "../utils/constants.js";
 
 const getProjects = asyncHandler(async (req, res) => {
-    const projects = await ProjectMember.aggregate([
-        {
-            $match: {
-                user: new mongoose.Types.ObjectId(req.user._id),
+    let projects;
+    if (req.user.role === UserRolesEnum.ADMIN) {
+        projects = await Project.aggregate([
+            {
+                $lookup: {
+                    from: "projectmembers",
+                    localField: "_id",
+                    foreignField: "project",
+                    as: "projectmembers",
+                },
             },
-        },
-        {
-            $lookup: {
-                from: "projects",
-                localField: "project",
-                foreignField: "_id",
-                as: "projectDetails",
-                pipeline: [
-                    {
-                        $lookup: {
-                            from: "projectmembers",
-                            localField: "_id",
-                            foreignField: "project",
-                            as: "projectmembers",
-                        },
+            {
+                $addFields: {
+                    membersCount: {
+                        $size: "$projectmembers",
                     },
-                    {
-                        $addFields: {
-                            membersCount: { $size: "$projectmembers" },
+                },
+            },
+            {
+                $project: {
+                    name: 1,
+                    description: 1,
+                    createdAt: 1,
+                    createdBy: 1,
+                    membersCount: 1,
+                },
+            },
+        ]);
+    } else {
+        projects = await ProjectMember.aggregate([
+            {
+                $match: {
+                    user: new mongoose.Types.ObjectId(req.user._id),
+                },
+            },
+            {
+                $lookup: {
+                    from: "projects",
+                    localField: "project",
+                    foreignField: "_id",
+                    as: "projectDetails",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "projectmembers",
+                                localField: "_id",
+                                foreignField: "project",
+                                as: "projectmembers",
+                            },
                         },
-                    },
-                ],
+                        {
+                            $addFields: {
+                                membersCount: { $size: "$projectmembers" },
+                            },
+                        },
+                    ],
+                },
             },
-        },
-        {
-            $unwind: "$projectDetails",
-        },
-        {
-            $project: {
-                _id: "$projectDetails._id",
-                name: "$projectDetails.name",
-                description: "$projectDetails.description",
-                createdAt: "$projectDetails.createdAt",
-                createdBy: "$projectDetails.createdBy",
-                membersCount: "$projectDetails.membersCount",
-                role: 1, // Role from ProjectMember
+            {
+                $unwind: "$projectDetails",
             },
-        },
-    ]);
-
+            {
+                $project: {
+                    _id: "$projectDetails._id",
+                    name: "$projectDetails.name",
+                    description: "$projectDetails.description",
+                    createdAt: "$projectDetails.createdAt",
+                    createdBy: "$projectDetails.createdBy",
+                    membersCount: "$projectDetails.membersCount",
+                    role: 1, // Role from ProjectMember
+                },
+            },
+        ]);
+    }
     // Fixed the empty check for arrays
     if (!projects || projects.length === 0) {
         throw new ApiError(404, "No projects found for this user");
@@ -69,24 +98,25 @@ const getProjects = asyncHandler(async (req, res) => {
 const getProjectById = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
 
+    if (!mongoose.isValidObjectId(projectId)) {
+        throw new ApiError(400, "Invalid Project Id");
+    }
+
     const project = await Project.findById(projectId);
 
     if (!project) {
         throw new ApiError(404, "Project not found");
     }
 
-    const projectMember = await ProjectMember.find({
-        user: new mongoose.Types.ObjectId(req.user._id),
-        project: new mongoose.Types.ObjectId(projectId),
-    });
-
-    if (!projectMember) {
-        throw new ApiError(403, "Unauthorized access");
-    }
-
     return res
         .status(200)
-        .json(new ApiResponse(200, project, "Project fetched successfully"));
+        .json(
+            new ApiResponse(
+                200,
+                project,
+                "Project fetched successfully",
+            ),
+        );
 });
 
 const createProject = asyncHandler(async (req, res) => {
@@ -259,7 +289,10 @@ const updateMemberRole = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid Role");
     }
 
-    if (newRole === ProjectMemberRoleEnum.PROJECT_ADMIN && req.user.role !== UserRolesEnum.ADMIN) {
+    if (
+        newRole === ProjectMemberRoleEnum.PROJECT_ADMIN &&
+        req.user.role !== UserRolesEnum.ADMIN
+    ) {
         throw new ApiError(
             403,
             "Only global admins can assign the project admin role",
