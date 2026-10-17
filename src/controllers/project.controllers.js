@@ -4,11 +4,10 @@ import { ProjectMember } from "../models/projectmember.models.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiError } from "../utils/api-error.js";
 import { ApiResponse } from "../utils/api-response.js";
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
 import {
-    AvailableTaskStatus,
-    AvailableUserRole,
-    UserRoleEnum,
+    AvailableProjectMemberRoles,
+    ProjectMemberRoleEnum,
 } from "../utils/constants.js";
 
 const getProjects = asyncHandler(async (req, res) => {
@@ -21,7 +20,7 @@ const getProjects = asyncHandler(async (req, res) => {
         {
             $lookup: {
                 from: "projects",
-                localField: "project", 
+                localField: "project",
                 foreignField: "_id",
                 as: "projectDetails",
                 pipeline: [
@@ -106,7 +105,7 @@ const createProject = asyncHandler(async (req, res) => {
     await ProjectMember.create({
         user: new mongoose.Types.ObjectId(req.user._id),
         project: new mongoose.Types.ObjectId(project._id),
-        role: UserRoleEnum.PROJECT_ADMIN,
+        role: ProjectMemberRoleEnum.PROJECT_ADMIN,
     });
 
     return res
@@ -224,7 +223,7 @@ const getProjectMembers = asyncHandler(async (req, res) => {
 });
 
 const addMembersToProject = asyncHandler(async (req, res) => {
-    const { email, role } = req.body;
+    const { role } = req.body;
     const { projectId } = req.params;
 
     const projectMember = await ProjectMember.findByIdAndUpdate(
@@ -256,7 +255,7 @@ const updateMemberRole = asyncHandler(async (req, res) => {
     const { projectId, userId } = req.params;
     const { newRole } = req.body;
 
-    if (!AvailableUserRole.includes(newRole)) {
+    if (!AvailableProjectMemberRoles.includes(newRole)) {
         throw new ApiError(400, "Invalid Role");
     }
 
