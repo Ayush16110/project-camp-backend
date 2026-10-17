@@ -70,7 +70,10 @@ router
 
 router
     .route("/:projectId/members/:userId")
-    .put(validateProjectPermission(), updateMemberRole)
+    .put(
+        validateProjectPermission([ProjectMemberRoleEnum.PROJECT_ADMIN]),
+        updateMemberRole,
+    )
     .delete(
         validateProjectPermission([ProjectMemberRoleEnum.PROJECT_ADMIN]),
         deleteMember,
