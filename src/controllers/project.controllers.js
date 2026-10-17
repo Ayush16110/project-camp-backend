@@ -1,4 +1,3 @@
-import { User } from "../models/user.models.js";
 import { Project } from "../models/project.models.js";
 import { ProjectMember } from "../models/projectmember.models.js";
 import { asyncHandler } from "../utils/async-handler.js";
@@ -8,6 +7,7 @@ import mongoose from "mongoose";
 import {
     AvailableProjectMemberRoles,
     ProjectMemberRoleEnum,
+    UserRolesEnum
 } from "../utils/constants.js";
 
 const getProjects = asyncHandler(async (req, res) => {
@@ -257,6 +257,13 @@ const updateMemberRole = asyncHandler(async (req, res) => {
 
     if (!AvailableProjectMemberRoles.includes(newRole)) {
         throw new ApiError(400, "Invalid Role");
+    }
+
+    if (newRole === ProjectMemberRoleEnum.PROJECT_ADMIN && req.user.role !== UserRolesEnum.ADMIN) {
+        throw new ApiError(
+            403,
+            "Only global admins can assign the project admin role",
+        );
     }
 
     let projectMember = await ProjectMember.findOne({

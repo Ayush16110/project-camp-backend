@@ -27,6 +27,7 @@ import {
     AvailableUserRoles,
     UserRolesEnum,
     ProjectMemberRoleEnum,
+    AvailableProjectMemberRoles,
 } from "../utils/constants.js";
 
 const router = Router();
@@ -37,7 +38,7 @@ router
     .route("/")
     .get(getProjects)
     .post(
-        validateProjectPermission([UserRolesEnum.ADMIN]),
+        validateProjectPermission(),
         createProjectValidator(),
         validate,
         createProject,
@@ -45,26 +46,23 @@ router
 
 router
     .route("/:projectId")
-    .get(validateProjectPermission(AvailableUserRoles), getProjectById)
+    .get(validateProjectPermission(AvailableProjectMemberRoles), getProjectById)
     .put(
-        validateProjectPermission([UserRolesEnum.ADMIN]),
+        validateProjectPermission([ProjectMemberRoleEnum.PROJECT_ADMIN]),
         createProjectValidator(),
         validate,
         updateProject,
     )
-    .delete(
-        validateProjectPermission([UserRolesEnum.ADMIN]),
-        deleteProject,
-    );
+    .delete(validateProjectPermission(), deleteProject);
 
 router
     .route("/:projectId/members")
-    .get(validateProjectPermission(AvailableUserRoles), getProjectMembers)
+    .get(
+        validateProjectPermission(AvailableProjectMemberRoles),
+        getProjectMembers,
+    )
     .post(
-        validateProjectPermission([
-            UserRolesEnum.ADMIN,
-            ProjectMemberRoleEnum.PROJECT_ADMIN,
-        ]),
+        validateProjectPermission([ProjectMemberRoleEnum.PROJECT_ADMIN]),
         addMemberToProjectValidator(),
         validate,
         addMembersToProject,
@@ -72,18 +70,9 @@ router
 
 router
     .route("/:projectId/members/:userId")
-    .put(
-        validateProjectPermission([
-            UserRolesEnum.ADMIN,
-            ProjectMemberRoleEnum.PROJECT_ADMIN,
-        ]),
-        updateMemberRole,
-    )
+    .put(validateProjectPermission(), updateMemberRole)
     .delete(
-        validateProjectPermission([
-            UserRolesEnum.ADMIN,
-            ProjectMemberRoleEnum.PROJECT_ADMIN,
-        ]),
+        validateProjectPermission([ProjectMemberRoleEnum.PROJECT_ADMIN]),
         deleteMember,
     );
 
