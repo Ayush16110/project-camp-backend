@@ -215,7 +215,7 @@ const getProjectMembers = asyncHandler(async (req, res) => {
                     {
                         $project: {
                             _id: 1,
-                            userName: 1,
+                            username: 1,
                             fullName: 1,
                             avatar: 1,
                         },
@@ -342,13 +342,15 @@ const updateMemberRole = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Project Member not found");
     }
 
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            projectMember,
-            "Project member role updated successfully",
-        ),
-    );
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                projectMember,
+                "Project member role updated successfully",
+            ),
+        );
 });
 
 const deleteMember = asyncHandler(async (req, res) => {
