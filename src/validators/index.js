@@ -37,8 +37,6 @@ const userLoginValidator = () => {
             .isEmail()
             .withMessage("Invalid Emaill"),
 
-        body("username").trim().optional(),
-
         body("password").trim().notEmpty().withMessage("Password is required"),
     ];
 };
