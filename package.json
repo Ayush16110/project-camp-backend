@@ -9,7 +9,8 @@
     "scripts": {
         "dev": "nodemon src/index.js",
         "start": "node src/index.js",
-        "format": "npx prettier . --write"
+        "format": "npx prettier . --write",
+        "format:check": "npx prettier . --check"
     },
     "devDependencies": {
         "nodemon": "^3.1.14",
@@ -26,6 +27,7 @@
         "mailgen": "^2.0.34",
         "mongodb": "^7.3.0",
         "mongoose": "^9.7.1",
+        "multer": "^2.5.0",
         "nodemailer": "^9.0.1"
     }
 }

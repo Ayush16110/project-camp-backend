@@ -1,9 +1,7 @@
 import { body } from "express-validator";
 import {
     AvailableProjectMemberRoles,
-    AvailableUserRoles,
-    UserRolesEnum,
-    ProjectMemberRoleEnum,
+    AvailableTaskStatus,
 } from "../utils/constants.js";
 
 const userRegisterValidator = () => {
@@ -98,6 +96,103 @@ const addMemberToProjectValidator = () => {
     ];
 };
 
+const addTaskToProjectValidator = () => {
+    return [
+        body("title").trim().notEmpty().withMessage("Title is required"),
+
+        body("description").optional().trim(),
+
+        body("assignedTo")
+            .optional()
+            .isMongoId()
+            .withMessage("Invalid assignee ID"),
+
+        body("status")
+            .optional()
+            .trim()
+            .isIn(AvailableTaskStatus)
+            .withMessage("Invalid Status"),
+    ];
+};
+
+const updateTaskValidator = () => {
+    return [
+        body("title")
+            .optional()
+            .trim()
+            .notEmpty()
+            .withMessage("Title cannot be empty"),
+
+        body("description").optional().trim(),
+
+        body("assignedTo")
+            .optional()
+            .isMongoId()
+            .withMessage("Invalid assignee ID"),
+
+        body("status")
+            .optional()
+            .trim()
+            .isIn(AvailableTaskStatus)
+            .withMessage("Invalid Status"),
+
+        body("removeAttachments")
+            .optional()
+            .custom((value) => {
+                let attachments;
+
+                try {
+                    attachments = JSON.parse(value);
+                } catch {
+                    throw new Error(
+                        "removeAttachments must be a valid JSON array",
+                    );
+                }
+
+                if (
+                    !Array.isArray(attachments) ||
+                    !attachments.every(
+                        (url) => typeof url === "string" && url.trim(),
+                    )
+                ) {
+                    throw new Error(
+                        "removeAttachments must contain attachment URLs",
+                    );
+                }
+
+                return true;
+            }),
+    ];
+};
+
+const createSubTaskValidator = () => {
+    return [
+        body("title")
+            .trim()
+            .notEmpty()
+            .withMessage("Subtask title is required"),
+
+        body("description").optional().trim(),
+    ];
+};
+
+const updateSubTaskValidator = () => {
+    return [
+        body("title")
+            .optional()
+            .trim()
+            .notEmpty()
+            .withMessage("Title cannot be empty"),
+
+        body("description").optional().trim(),
+
+        body("isCompleted")
+            .optional()
+            .isBoolean()
+            .withMessage("isCompleted must be a boolean"),
+    ];
+};
+
 export {
     userRegisterValidator,
     userLoginValidator,
@@ -106,4 +201,8 @@ export {
     userResetForgotPasswordValidator,
     createProjectValidator,
     addMemberToProjectValidator,
+    addTaskToProjectValidator,
+    updateTaskValidator,
+    createSubTaskValidator,
+    updateSubTaskValidator,
 };

@@ -24,8 +24,6 @@ import {
 } from "../middlewares/auth.middlewares.js";
 
 import {
-    AvailableUserRoles,
-    UserRolesEnum,
     ProjectMemberRoleEnum,
     AvailableProjectMemberRoles,
 } from "../utils/constants.js";
