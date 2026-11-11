@@ -10,6 +10,8 @@ import {
     ProjectMemberRoleEnum,
     UserRolesEnum,
 } from "../utils/constants.js";
+import { Task } from "../models/task.models.js";
+import { SubTask } from "../models/subtask.models.js";
 
 const getProjects = asyncHandler(async (req, res) => {
     let projects;
@@ -175,19 +177,50 @@ const updateProject = asyncHandler(async (req, res) => {
 const deleteProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
 
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-        throw new ApiError(404, "Project not found!");
+    if (!mongoose.isValidObjectId(projectId)) {
+        throw new ApiError(400, "Invalid Project ID");
     }
 
-    await Project.deleteOne({ _id: projectId });
+    const session = await mongoose.startSession();
 
-    await ProjectMember.deleteMany({ project: projectId });
+    try {
+        await session.withTransaction(async () => {
+            const project = await Project.findById(projectId).session(session);
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, {}, "Porject deleted successfully"));
+            if (!project) {
+                throw new ApiError(404, "Project not found!");
+            }
+
+            const tasks = await Task.find({ project: projectId })
+                .select("_id")
+                .session(session);
+
+            const taskIds = tasks.map((task) => task._id);
+
+            await SubTask.deleteMany(
+                { task: { $in: taskIds } },
+                { session }
+            );
+
+            await Task.deleteMany(
+                { project: projectId },
+                { session }
+            );
+
+            await ProjectMember.deleteMany(
+                { project: projectId },
+                { session }
+            );
+
+            await Project.findByIdAndDelete(projectId).session(session);
+        });
+    } finally {
+        await session.endSession();
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Project deleted successfully")
+    );
 });
 
 const getProjectMembers = asyncHandler(async (req, res) => {
