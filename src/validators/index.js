@@ -193,6 +193,25 @@ const updateSubTaskValidator = () => {
     ];
 };
 
+const createNoteValidator = () => {
+    return [
+        body("content")
+            .trim()
+            .notEmpty()
+            .withMessage("Note content is required"),
+    ];
+};
+
+const updateNoteValidator = () => {
+    return [
+        body("content")
+            .optional()
+            .trim()
+            .notEmpty()
+            .withMessage("Note content cannot be empty"),
+    ];
+};
+
 export {
     userRegisterValidator,
     userLoginValidator,
@@ -205,4 +224,6 @@ export {
     updateTaskValidator,
     createSubTaskValidator,
     updateSubTaskValidator,
+    createNoteValidator,
+    updateNoteValidator,
 };

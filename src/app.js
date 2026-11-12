@@ -26,11 +26,13 @@ import healthCheckRouter from "./routes/healthcheck.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/project.routes.js";
 import taskRoutes from "./routes/task.routes.js";
+import noteRouter from "./routes/note.routes.js";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth/", authRoutes);
 app.use("/api/v1/projects/", projectRoutes);
 app.use("/api/v1/tasks/", taskRoutes);
+app.use("/api/v1/notes", noteRouter);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the Project Management Platform!");
