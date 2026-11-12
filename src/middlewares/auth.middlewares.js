@@ -59,6 +59,8 @@ export const validateProjectPermission = (roles = []) =>
             throw new ApiError(404, "Project Not Found");
         }
 
+        req.projectMembership = membership;
+
         if (!roles.includes(membership.role)) {
             throw new ApiError(
                 403,
